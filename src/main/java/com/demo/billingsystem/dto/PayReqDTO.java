@@ -1,6 +1,7 @@
 package com.demo.billingsystem.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import javax.validation.constraints.Pattern;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,17 +11,18 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransactionsResponseDTO {
+public class PayReqDTO {
 
-	@ApiModelProperty(position = 0)
 	private String api_caller;
-	@ApiModelProperty(position = 1)
+	
 	private String id;
-	@ApiModelProperty(position = 3)
+	
 	private String amount;
-	@ApiModelProperty(position = 4)
+	
 	private String reference_no;
-	@ApiModelProperty(position = 5)
+	
+//	@Pattern(regexp = "[0-9]+", message = "Phone number can have numbers only.")
+	@Pattern(regexp = "[9][5][9]([,\\\\s])?[0-9]+", message = "Phone number can have numbers only and must start with 959... ")
 	private String phone_number;
-
+ 
 }

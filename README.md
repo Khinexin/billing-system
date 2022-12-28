@@ -24,7 +24,6 @@ $ mvn spring-boot:run
 - Spring Web
 - Spring Data JPA with Hibernate
 - Spring Security with JWT Token
-- Swagger UI
 - MySql
 - Lombok
 
@@ -34,7 +33,6 @@ $ mvn spring-boot:run
 ## Description
 
 To generate jwt-token , 
-- [swagger api](http://localhost:8080/swagger-ui.html)
 - login url`(http://localhost:8080/login?username=admin&password=admin)` : initiated user data (username, password) 
 ```shell
 - admin, admin

@@ -11,10 +11,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BillerListDTO {
+public class BillerListRespDTO {
 
-	private String date_time;
+	private String status_message;
 
-	private List<BillerDTO> billers;
+	private List<BillerListDTO> billerListDTO;
 
 }

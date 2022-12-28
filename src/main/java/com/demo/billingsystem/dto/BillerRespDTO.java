@@ -1,8 +1,5 @@
 package com.demo.billingsystem.dto;
 
-import java.util.List;
-
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,12 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BillerListResponseDTO {
+public class BillerRespDTO {
 
-	@ApiModelProperty(position = 0)
 	private String status_message;
-
-	@ApiModelProperty(position = 1)
-	private List<BillerListDTO> billerListDTO;
-
+	
+	private String date_time;
+	private String bill_id;
+	private String name;
+	private String description;
+	
 }

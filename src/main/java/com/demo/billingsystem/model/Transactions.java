@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +35,8 @@ public class Transactions {
 	@Column(name = "phone_number")
 	private String phoneNumber;
 
+	@Min(value = 0, message = "Age should not be less than 0")
+    @Max(value = 100001, message = "Age should not be greater than 100000")
 	private Long amount;
 
 	@ManyToOne

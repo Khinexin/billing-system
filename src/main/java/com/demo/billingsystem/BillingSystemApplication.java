@@ -29,7 +29,7 @@ public class BillingSystemApplication implements CommandLineRunner {
 	public ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
-
+	
 	@Override
 	public void run(String... params) throws Exception {
 
@@ -42,8 +42,7 @@ public class BillingSystemApplication implements CommandLineRunner {
 			// client
 			userService.signup(User.builder().username("client").password("client")
 					.userRoles(new ArrayList<UserRole>(Arrays.asList(UserRole.ROLE_CLIENT))).build());
-			
-			
+
 			//
 			userService.signup(User.builder().username("Citizen Pay User").password("123456")
 					.userRoles(new ArrayList<UserRole>(Arrays.asList(UserRole.ROLE_CLIENT))).build());

@@ -4,17 +4,13 @@ import java.util.List;
 
 import com.demo.billingsystem.model.UserRole;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 @Data
-public class UserResponseDTO {
+public class UserRespDTO {
 
-  @ApiModelProperty(position = 0)
   private Integer id;
-  @ApiModelProperty(position = 1)
   private String username;
-  @ApiModelProperty(position = 2)
   List<UserRole> userRoles;
 
 }

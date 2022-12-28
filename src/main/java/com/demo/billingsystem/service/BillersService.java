@@ -15,7 +15,7 @@ import java.util.Set;
 import org.springframework.stereotype.Service;
 
 import com.demo.billingsystem.dto.BillerDTO;
-import com.demo.billingsystem.dto.BillerListResponseDTO;
+import com.demo.billingsystem.dto.BillerListRespDTO;
 import com.demo.billingsystem.dto.BillerListDTO;
 import com.demo.billingsystem.model.Billers;
 import com.demo.billingsystem.repository.BillersRepository;
@@ -30,16 +30,21 @@ public class BillersService {
 
 	public Billers saveBiller(Billers biller) {
 
+//		Date today = Calendar.getInstance().getTime();
+//		Format formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+//		String dateString = formatter.format(today);
+//		biller.setDateTime(dateString.replaceAll("-", ""));
+//		System.out.println(biller.toString());
+//		return billersRepository.saveAndFlush(biller);
+		
 		Date today = Calendar.getInstance().getTime();
-		Format formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+		Format formatter = new SimpleDateFormat("yyyyMMddHHmmss");
 		String dateString = formatter.format(today);
-
-		biller.setDateTime(dateString.replaceAll("-", ""));
-		System.out.println(biller.toString());
+		biller.setDateTime(dateString);
 		return billersRepository.saveAndFlush(biller);
 	}
 
-	public BillerListResponseDTO allBillers() {
+	public BillerListRespDTO allBillers() {
 
 		List<BillerListDTO> dtbDto = new ArrayList<BillerListDTO>();
 
@@ -80,17 +85,17 @@ public class BillersService {
 			}
 		}
 
-		BillerListResponseDTO dto = BillerListResponseDTO.builder().status_message("Transaction is successful!")
+		BillerListRespDTO dto = BillerListRespDTO.builder().status_message("Transaction is successful!")
 				.billerListDTO(dtbDto).build();
 
 		return dto;
 	}
 
-	public BillerListResponseDTO billersById(String biller_id) {
+	public BillerListRespDTO billersById(String biller_id) {
 
 		Billers biller = billersRepository.findById(Integer.valueOf(biller_id)).orElse(new Billers());
 
-		BillerListResponseDTO dto = BillerListResponseDTO.builder().status_message("Transaction is successful!")
+		BillerListRespDTO dto = BillerListRespDTO.builder().status_message("Transaction is successful!")
 				.billerListDTO(Arrays.asList(BillerListDTO.builder().date_time(biller.getDateTime())
 						.billers(Arrays.asList(BillerDTO.builder().bill_id(String.valueOf(biller.getId()))
 								.name(biller.getName()).description(biller.getDescription()).build()))

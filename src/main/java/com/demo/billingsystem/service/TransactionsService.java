@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import org.springframework.stereotype.Service;
 
-import com.demo.billingsystem.dto.TransactionsResponseDTO;
+import com.demo.billingsystem.dto.TransactionsRespDTO;
 import com.demo.billingsystem.model.Transactions;
 import com.demo.billingsystem.repository.TransactionsRepository;
 
@@ -26,25 +26,25 @@ public class TransactionsService {
 		return transactionsRepository.findAll();
 	}
 
-	public List<TransactionsResponseDTO> findAllTransactionsResponseDTOList() {
-		List<TransactionsResponseDTO> trResList = new ArrayList<TransactionsResponseDTO>();
+	public List<TransactionsRespDTO> findAllTransactionsResponseDTOList() {
+		List<TransactionsRespDTO> trResList = new ArrayList<TransactionsRespDTO>();
 		for (Transactions tr : findAllTransactions()) {
-			trResList.add(TransactionsResponseDTO.builder().api_caller(tr.getApiCaller())
+			trResList.add(TransactionsRespDTO.builder().api_caller(tr.getApiCaller())
 					.id(String.valueOf(tr.getTransition_id())).amount(String.valueOf(tr.getAmount()))
 					.reference_no(tr.getReferenceNo()).phone_number(tr.getPhoneNumber()).build());
 		}
 		return trResList;
 	}
 
-	public TransactionsResponseDTO findTransactionsResponseDTOById(int id) {
+	public TransactionsRespDTO findTransactionsResponseDTOById(int id) {
 		Transactions tr = transactionsRepository.findById(id).orElse(null);
 
 		if (!Objects.isNull(tr)) {
-			return TransactionsResponseDTO.builder().api_caller(tr.getApiCaller())
+			return TransactionsRespDTO.builder().api_caller(tr.getApiCaller())
 					.id(String.valueOf(tr.getTransition_id())).amount(String.valueOf(tr.getAmount()))
 					.reference_no(tr.getReferenceNo()).phone_number(tr.getPhoneNumber()).build();
 		}
-		return TransactionsResponseDTO.builder().build();
+		return TransactionsRespDTO.builder().build();
 	}
 
 }

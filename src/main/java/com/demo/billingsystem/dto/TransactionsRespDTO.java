@@ -1,7 +1,5 @@
 package com.demo.billingsystem.dto;
 
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,10 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BillerListDTO {
+public class TransactionsRespDTO {
 
-	private String date_time;
-
-	private List<BillerDTO> billers;
+	private String api_caller;
+	private String id;
+	private String amount;
+	private String reference_no;
+	private String phone_number;
 
 }
