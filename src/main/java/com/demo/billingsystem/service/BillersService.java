@@ -81,7 +81,7 @@ public class BillersService {
 		}
 
 		BillerListResponseDTO dto = BillerListResponseDTO.builder().status_message("Transaction is successful!")
-				.date_time_billers(dtbDto).build();
+				.billerListDTO(dtbDto).build();
 
 		return dto;
 	}
@@ -91,7 +91,7 @@ public class BillersService {
 		Billers biller = billersRepository.findById(Integer.valueOf(biller_id)).orElse(new Billers());
 
 		BillerListResponseDTO dto = BillerListResponseDTO.builder().status_message("Transaction is successful!")
-				.date_time_billers(Arrays.asList(BillerListDTO.builder().date_time(biller.getDateTime())
+				.billerListDTO(Arrays.asList(BillerListDTO.builder().date_time(biller.getDateTime())
 						.billers(Arrays.asList(BillerDTO.builder().bill_id(String.valueOf(biller.getId()))
 								.name(biller.getName()).description(biller.getDescription()).build()))
 						.build()))
@@ -99,6 +99,10 @@ public class BillersService {
 
 		return dto;
 
+	}
+
+	public Billers findBillerById(int id) {
+		return billersRepository.findById(id).orElse(new Billers());
 	}
 
 }
