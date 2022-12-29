@@ -39,12 +39,11 @@ CREATE TABLE `users_user_roles` (
 
 
 --
-
-INSERT INTO users (name, description, dateTime) VALUES
-  ('biller 1', 'biller 1 dec', '20221228214122'),
-  ('biller 2', 'biller 2 dec', '20221228214130'),
-  ('biller 3', 'biller 3 dec', '20221228214130'),
-  ('biller 4', 'biller 4 dec', '20221228214133'),
-  ('biller 5', 'biller 5 dec', '20221228214134'),
-  ('biller 6', 'biller 6 dec', '20221228214134'),
-  ('biller 7', 'biller 7 dec', '20221228214134');
+-- INSERT INTO users (name, description, dateTime) VALUES
+--  ('biller 1', 'biller 1 dec', '20221228214122'),
+--  ('biller 2', 'biller 2 dec', '20221228214130'),
+--  ('biller 3', 'biller 3 dec', '20221228214130'),
+--  ('biller 4', 'biller 4 dec', '20221228214133'),
+--  ('biller 5', 'biller 5 dec', '20221228214134'),
+--  ('biller 6', 'biller 6 dec', '20221228214134'),
+--  ('biller 7', 'biller 7 dec', '20221228214134');
