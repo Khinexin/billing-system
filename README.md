@@ -32,10 +32,18 @@ $ mvn spring-boot:run
 
 ## Description
 
+
+- provided postman script in the `src/main/resources/BillerAssignment.postman_collection.json` 
+BillerAssignment.postman_collection.json
+
+- initialization of SQL script in the  `src/main/resources/init-data.sql` 
+init-data.sql
+
+
+```shell
 To generate jwt-token , 
 - login url`(http://localhost:8080/login?username=admin&password=admin)` : initiated user data (username, password) 
-```shell
+
 - admin, admin
 - client, client
 ```
-
