@@ -1,3 +1,6 @@
+CREATE DATABASE billingdb;
+USE billingdb;
+
 CREATE TABLE `billers` (
   `id` int NOT NULL AUTO_INCREMENT,
   `date_time` varchar(255) DEFAULT NULL,
