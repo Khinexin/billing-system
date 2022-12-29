@@ -1,4 +1,4 @@
-# Test Project for Java Developer 
+# Assignment Project (billing system)
 
 ## Requirements
 
