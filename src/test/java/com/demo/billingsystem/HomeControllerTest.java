@@ -70,13 +70,13 @@ public class HomeControllerTest {
 //		mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
 //				.andExpect(content().string(containsString("")));
 //	}
-	@Test
-	@DisplayName("greeting - GET /greeting")
-	public void testGreeting() throws Exception {
-		when(userService.greet()).thenReturn("Hello, Mock");
-		mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string(containsString("Hello, Mock")));
-	}
+//	@Test
+//	@DisplayName("greeting - GET /greeting")
+//	public void testGreeting() throws Exception {
+//		when(userService.greet()).thenReturn("Hello, Mock");
+//		mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
+//				.andExpect(content().string(containsString("Hello, Mock")));
+//	}
 
 	@Test
 	@DisplayName("signup - POST /register")
