@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,46 +41,52 @@ public class HomeController {
 	private final ModelMapper modelMapper;
 
 	@PostMapping("/register")
-	public String signup(@RequestBody UserDataDTO user) {
+	public ResponseEntity<?> signup(@RequestBody UserDataDTO user) {
 		log.info("Register New User.");
-		return userService.signup(modelMapper.map(user, User.class));
+		String response = userService.signup(modelMapper.map(user, User.class));
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// login - endpoint
 	@PostMapping("/login")
-	public LogInRespDTO login(@RequestParam(required = true) String username,
+	public ResponseEntity<?> login(@RequestParam(required = true) String username,
 			@RequestParam(required = true) String password) {
 		log.info("Sign In User.");
-		return LogInRespDTO.builder().status_message("Login is successful")
+		LogInRespDTO response = LogInRespDTO.builder().status_message("Login is successful")
 				.access_token(userService.signin(username, password)).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// add - endpoint
 	@PostMapping("/add")
-	public BillerRespDTO addBiller(@RequestBody BillerReqDTO billerReqDTO) {
+	public ResponseEntity<?> addBiller(@RequestBody BillerReqDTO billerReqDTO) {
 
 		log.info("Add Biller.");
 		Billers biller = billersService.saveBiller(modelMapper.map(billerReqDTO, Billers.class));
-		return BillerRespDTO.builder().status_message("Bill Top up is successfully saved in the system.")
-				.date_time(biller.getDateTime()).bill_id(String.valueOf(biller.getId())).name(biller.getName())
-				.description(biller.getDescription()).build();
+		BillerRespDTO response = BillerRespDTO.builder()
+				.status_message("Bill Top up is successfully saved in the system.").date_time(biller.getDateTime())
+				.bill_id(String.valueOf(biller.getId())).name(biller.getName()).description(biller.getDescription())
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// list - endpoint
 	@GetMapping("/list")
-	public BillerListRespDTO findAllBillers(@RequestParam(required = false) String id) {
+	public ResponseEntity<?> findAllBillers(@RequestParam(required = false) String id) {
 
 		if (Objects.isNull(id)) {
-			return billersService.allBillers();
+			BillerListRespDTO response = billersService.allBillers();
+			return new ResponseEntity<>(response, HttpStatus.OK);
 		} else {
-			return billersService.billersById(id);
+			BillerListRespDTO responseById = billersService.billersById(id);
+			return new ResponseEntity<>(responseById, HttpStatus.OK);
 		}
 
 	}
 
 	// pay - endpoint
 	@PostMapping("/pay")
-	public PayRespDTO addBiller(@RequestBody PayReqDTO payReqDTO) {
+	public ResponseEntity<?> addBiller(@RequestBody PayReqDTO payReqDTO) {
 
 		log.info("Add Pay.");
 		Transactions trs = transactionsService.savePay(
@@ -86,22 +94,25 @@ public class HomeController {
 						.referenceNo(payReqDTO.getReference_no()).amount(Long.valueOf(payReqDTO.getAmount()))
 						.billers(billersService.findBillerById(Integer.valueOf(payReqDTO.getId()))).build());
 
-		return PayRespDTO.builder().status_message("Transaction is successful!")
+		PayRespDTO response = PayRespDTO.builder().status_message("Transaction is successful!")
 				.transaction_id(String.valueOf(trs.getTransition_id())).amount(String.valueOf(trs.getAmount()))
 				.transaction_date(trs.getReferenceNo()).phone_number(trs.getPhoneNumber()).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 	// transaction - endpoint
 	@GetMapping("/transaction")
-	public TransactionsRespDTO findTransactionById(@RequestParam(required = true) String id) {
-		return transactionsService.findTransactionsResponseDTOById(Integer.parseInt(id));
+	public ResponseEntity<?> findTransactionById(@RequestParam(required = true) String id) {
+		TransactionsRespDTO response = transactionsService.findTransactionsResponseDTOById(Integer.parseInt(id));
+		return new ResponseEntity<>(response, HttpStatus.OK);
 
 	}
 
 	@GetMapping("/transaction/list")
-	public List<Transactions> findTransactionById() {
-		return transactionsService.findAllTransactions();
-
+	public ResponseEntity<?> findTransactionById() {
+		List<Transactions> response = transactionsService.findAllTransactions();
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

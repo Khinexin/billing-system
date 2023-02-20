@@ -1,18 +1,27 @@
 package com.demo.billingsystem;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.junit.jupiter.api.DisplayName;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.mockito.internal.verification.VerificationModeFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -23,11 +32,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import com.demo.billingsystem.controller.HomeController;
-import com.demo.billingsystem.dto.LogInRespDTO;
+import com.demo.billingsystem.dto.BillerDTO;
+import com.demo.billingsystem.dto.BillerListDTO;
+import com.demo.billingsystem.dto.BillerListRespDTO;
+import com.demo.billingsystem.model.Billers;
+import com.demo.billingsystem.model.Transactions;
 import com.demo.billingsystem.model.User;
 import com.demo.billingsystem.security.JwtTokenFilter;
 import com.demo.billingsystem.security.JwtTokenProvider;
@@ -36,12 +47,13 @@ import com.demo.billingsystem.service.BillersService;
 import com.demo.billingsystem.service.TransactionsService;
 import com.demo.billingsystem.service.UserService;
 
-//@SpringBootTest
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = { HomeController.class })
 //@AutoConfigureMockMvc
-//@Import(HomeController.class)
+//@TestPropertySource(locations = "classpath:application-integrationtest.properties")
 
 @WithMockUser
-@WebMvcTest(controllers = { HomeController.class })
+@WebMvcTest(controllers = { HomeController.class }, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @ContextConfiguration(classes = { HomeController.class, WebSecurityConfig.class, JwtTokenProvider.class,
 		JwtTokenFilter.class })
 public class HomeControllerTest {
@@ -64,73 +76,106 @@ public class HomeControllerTest {
 	@MockBean
 	private AuthenticationManager authenticationManager;
 
-//	@Test
-//	public void greetin_withoutValidJwtToken() throws Exception {
-//		when(userService.greet()).thenReturn("Hello!");
-//		mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
-//				.andExpect(content().string(containsString("")));
-//	}
-//	@Test
-//	@DisplayName("greeting - GET /greeting")
-//	public void testGreeting() throws Exception {
-//		when(userService.greet()).thenReturn("Hello, Mock");
-//		mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
-//				.andExpect(content().string(containsString("Hello, Mock")));
-//	}
-
-	@Test
-	@DisplayName("signup - POST /register")
-	public void testSignUp() throws Exception {
-		User user = User.builder().username("admin").password("admin").build();
-		mockMvc.perform(MockMvcRequestBuilders.get("/register")
-				.header("authorization", "Bearer " + userService.signup(user)).contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
-		verify(userService).signup(user);
+	@Before
+	public void setUp() throws Exception {
 	}
 
 	@Test
-	@DisplayName("login - POST /login")
-	public void testLogin() throws Exception {
+	public void whenSignUp_thenCreateUser_thenReturnToken() throws Exception {
+		User user = User.builder().username("apple").password("apple").build();
+		mockMvc.perform(get("/register").contentType(MediaType.APPLICATION_JSON).header("authorization",
+				"Bearer " + userService.signup(user))).andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+		verify(userService).signup(user);
+
+		reset(userService);
+	}
+
+	@Test
+	public void whenLogin_thenReturnToken() throws Exception {
+		when(userService.signin("admin", "admin")).thenReturn("THIS_IS_TEMP_JWT_TOKEN");
+		mockMvc.perform(get("/login").contentType(MediaType.APPLICATION_JSON))
+				.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+		reset(userService);
+	}
+
+	@Test
+	public void whenFindBillers_thenReturnBillers() throws Exception {
+
+//		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
+//		mockMvc.perform(get("/list").header("authorization", "Bearer " + "this_is_JWT_token")
+//				.contentType(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isOk());
+//		verify(billersService).allBillers();
+//		reset(userService);
+
+		//
+
+		Billers biller1 = Billers.builder().name("apple").description("desc 1").dateTime("20221228214122")
+				.transactionsList(Arrays.asList(Transactions.builder().build())).build();
+		Billers biller2 = Billers.builder().name("orange").description("desc 2 ").dateTime("20221228214122")
+				.transactionsList(Arrays.asList(Transactions.builder().build())).build();
+		Billers biller3 = Billers.builder().name("cherry").description("desc 3").dateTime("20221228214122")
+				.transactionsList(Arrays.asList(Transactions.builder().build())).build();
+
+		BillerListRespDTO responseDto = BillerListRespDTO.builder().status_message("Transaction is successful!")
+				.billerListDTO(Arrays.asList(BillerListDTO.builder().date_time("")
+						.billers(mapList(Arrays.asList(biller1, biller2, biller3), BillerDTO.class)).build()))
+				.build();
+
+		given(billersService.allBillers()).willReturn(responseDto);
+
+//		mockMvc.perform(get("/list").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
+//				.andExpect(jsonPath("$", hasSize(1)))
+//				.andExpect(jsonPath("$[0].name", is(biller1.getName())))
+//				.andExpect(jsonPath("$[1].name", is(biller2.getName())))
+//				.andExpect(jsonPath("$[2].name", is(biller3.getName())));
+//		verify(billersService, VerificationModeFactory.times(1)).allBillers();
 
 		when(userService.signin("admin", "admin")).thenReturn("THIS_IS_TEMP_JWT_TOKEN");
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/login"))
-				.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+		mockMvc.perform(get("/list").contentType(MediaType.APPLICATION_JSON).header("authorization",
+				"Bearer " + "THIS_IS_TEMP_JWT_TOKEN")).andExpect(status().isOk()).andExpect(status().isOk())
+				.andExpect(jsonPath("$.status_message", is("Transaction is successful!")));
+		verify(billersService, VerificationModeFactory.times(1)).allBillers();
+
+		reset(billersService);
 
 	}
 
-	@Test
-	@DisplayName("addBiller - POST /add")
-	public void testAddBiller() throws Exception {
+//	@Test
+//	public void testAddBiller() throws Exception {
+//
+//	}
+//
+//
+//	@Test
+//	public void testPayBiller() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void testFindTransactionById() throws Exception {
+//
+//	}
+//
+//	@Test
+//	public void testFindTransactionList() throws Exception {
+//
+//	}
 
+	/*
+	 * @Test public void greetin_withoutValidJwtToken() throws Exception {
+	 * when(userService.greet()).thenReturn("Hello!");
+	 * mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
+	 * .andExpect(content().string(containsString(""))); }
+	 * 
+	 * @Test
+	 * 
+	 * @DisplayName("greeting - GET /greeting") public void testGreeting() throws
+	 * Exception { when(userService.greet()).thenReturn("Hello, Mock");
+	 * mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
+	 * .andExpect(content().string(containsString("Hello, Mock"))); }
+	 */
+	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
+		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}
-
-	@Test
-	@DisplayName("findAllBillers - GET /list")
-	public void testFindAllBillers() throws Exception {
-		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
-
-		mockMvc.perform(MockMvcRequestBuilders.get("/list").header("authorization", "Bearer " + "this_is_JWT_token")
-				.contentType(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isOk());
-		verify(billersService).allBillers();
-	}
-
-	@Test
-	@DisplayName("payBiller - POST /pay")
-	public void testPayBiller() throws Exception {
-
-	}
-
-	@Test
-	@DisplayName("findTransactionById - POST /transaction")
-	public void testFindTransactionById() throws Exception {
-
-	}
-
-	@Test
-	@DisplayName("findTransactionList - POST /transaction/list")
-	public void testFindTransactionList() throws Exception {
-
-	}
-
 }
