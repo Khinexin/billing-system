@@ -1,7 +1,6 @@
 package com.demo.billingsystem;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -11,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,7 +30,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.demo.billingsystem.controller.HomeController;
@@ -46,6 +45,8 @@ import com.demo.billingsystem.security.WebSecurityConfig;
 import com.demo.billingsystem.service.BillersService;
 import com.demo.billingsystem.service.TransactionsService;
 import com.demo.billingsystem.service.UserService;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 //@RunWith(SpringRunner.class)
 //@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = { HomeController.class })
@@ -101,7 +102,7 @@ public class HomeControllerTest {
 	@Test
 	public void whenFindBillers_thenReturnBillers() throws Exception {
 
-//		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
+		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
 //		mockMvc.perform(get("/list").header("authorization", "Bearer " + "this_is_JWT_token")
 //				.contentType(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isOk());
 //		verify(billersService).allBillers();
@@ -130,8 +131,6 @@ public class HomeControllerTest {
 //				.andExpect(jsonPath("$[2].name", is(biller3.getName())));
 //		verify(billersService, VerificationModeFactory.times(1)).allBillers();
 
-		when(userService.signin("admin", "admin")).thenReturn("THIS_IS_TEMP_JWT_TOKEN");
-
 		mockMvc.perform(get("/list").contentType(MediaType.APPLICATION_JSON).header("authorization",
 				"Bearer " + "THIS_IS_TEMP_JWT_TOKEN")).andExpect(status().isOk()).andExpect(status().isOk())
 				.andExpect(jsonPath("$.status_message", is("Transaction is successful!")));
@@ -141,17 +140,23 @@ public class HomeControllerTest {
 
 	}
 
-//	@Test
-//	public void testAddBiller() throws Exception {
-//
-//	}
-//
-//
-//	@Test
-//	public void testPayBiller() throws Exception {
-//
-//	}
-//
+	@Test
+	public void whenAddBiller_thenReturnBillerRespDTO() throws Exception {
+		Billers biller = Billers.builder().name("Biller 1").description("Biller Description").dateTime("20221228214133")
+				.build();
+		given(billersService.saveBiller(Mockito.any())).willReturn(biller);
+
+		mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(toJson(biller)))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.name", is("Biller 1")));
+		verify(billersService, VerificationModeFactory.times(1)).saveBiller(Mockito.any());
+		reset(billersService);
+	}
+
+	@Test
+	public void whenAddPay_thenReturnPayRespDTO() throws Exception {
+
+	}
+
 //	@Test
 //	public void testFindTransactionById() throws Exception {
 //
@@ -177,5 +182,11 @@ public class HomeControllerTest {
 	 */
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
 		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
+	}
+
+	byte[] toJson(Object object) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		return mapper.writeValueAsBytes(object);
 	}
 }

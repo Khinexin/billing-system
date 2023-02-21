@@ -67,7 +67,7 @@ public class HomeController {
 				.status_message("Bill Top up is successfully saved in the system.").date_time(biller.getDateTime())
 				.bill_id(String.valueOf(biller.getId())).name(biller.getName()).description(biller.getDescription())
 				.build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	// list - endpoint
@@ -86,7 +86,7 @@ public class HomeController {
 
 	// pay - endpoint
 	@PostMapping("/pay")
-	public ResponseEntity<?> addBiller(@RequestBody PayReqDTO payReqDTO) {
+	public ResponseEntity<?> addPay(@RequestBody PayReqDTO payReqDTO) {
 
 		log.info("Add Pay.");
 		Transactions trs = transactionsService.savePay(
