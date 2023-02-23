@@ -92,13 +92,13 @@ public class HomeController {
 		Transactions trs = transactionsService.savePay(
 				Transactions.builder().apiCaller(payReqDTO.getApi_caller()).phoneNumber(payReqDTO.getPhone_number())
 						.referenceNo(payReqDTO.getReference_no()).amount(Long.valueOf(payReqDTO.getAmount()))
-						.billers(billersService.findBillerById(Integer.valueOf(payReqDTO.getId()))).build());
+						.billers(billersService.findBillerById(payReqDTO.getId())).build());
 
 		PayRespDTO response = PayRespDTO.builder().status_message("Transaction is successful!")
 				.transaction_id(String.valueOf(trs.getTransition_id())).amount(String.valueOf(trs.getAmount()))
 				.transaction_date(trs.getReferenceNo()).phone_number(trs.getPhoneNumber()).build();
 
-		return new ResponseEntity<>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	// transaction - endpoint
@@ -106,11 +106,10 @@ public class HomeController {
 	public ResponseEntity<?> findTransactionById(@RequestParam(required = true) String id) {
 		TransactionsRespDTO response = transactionsService.findTransactionsResponseDTOById(Integer.parseInt(id));
 		return new ResponseEntity<>(response, HttpStatus.OK);
-
 	}
 
 	@GetMapping("/transaction/list")
-	public ResponseEntity<?> findTransactionById() {
+	public ResponseEntity<?> findTransactionList() {
 		List<Transactions> response = transactionsService.findAllTransactions();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}

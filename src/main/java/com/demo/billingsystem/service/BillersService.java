@@ -106,8 +106,9 @@ public class BillersService {
 
 	}
 
-	public Billers findBillerById(int id) {
-		return billersRepository.findById(id).orElse(new Billers());
+	public Billers findBillerById(String id) {
+		int convertedId = Integer.parseInt(id);
+		return billersRepository.findById(convertedId).orElse(new Billers());
 	}
 
 }
