@@ -24,7 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -36,6 +38,10 @@ import com.demo.billingsystem.controller.HomeController;
 import com.demo.billingsystem.dto.BillerDTO;
 import com.demo.billingsystem.dto.BillerListDTO;
 import com.demo.billingsystem.dto.BillerListRespDTO;
+import com.demo.billingsystem.dto.BillerRespDTO;
+import com.demo.billingsystem.dto.PayReqDTO;
+import com.demo.billingsystem.dto.PayRespDTO;
+import com.demo.billingsystem.dto.TransactionsRespDTO;
 import com.demo.billingsystem.model.Billers;
 import com.demo.billingsystem.model.Transactions;
 import com.demo.billingsystem.model.User;
@@ -83,32 +89,47 @@ public class HomeControllerTest {
 
 	@Test
 	public void whenSignUp_thenCreateUser_thenReturnToken() throws Exception {
-		User user = User.builder().username("apple").password("apple").build();
-		mockMvc.perform(get("/register").contentType(MediaType.APPLICATION_JSON).header("authorization",
-				"Bearer " + userService.signup(user))).andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
-		verify(userService).signup(user);
 
+		User user = User.builder().username("apple").password("apple").build();
+
+		mockMvc.perform(get("/register") //
+				.contentType(MediaType.APPLICATION_JSON)//
+				.header("authorization", "Bearer " + userService.signup(user)))//
+				.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
+
+		verify(userService).signup(user);
 		reset(userService);
 	}
 
 	@Test
 	public void whenLogin_thenReturnToken() throws Exception {
 		when(userService.signin("admin", "admin")).thenReturn("THIS_IS_TEMP_JWT_TOKEN");
-		mockMvc.perform(get("/login").contentType(MediaType.APPLICATION_JSON))
+		mockMvc.perform(get("/login")//
+				.contentType(MediaType.APPLICATION_JSON))//
 				.andExpect(MockMvcResultMatchers.status().isMethodNotAllowed());
 		reset(userService);
+	}
+
+	@Test
+	public void whenAddBiller_thenReturnBillerRespDTO() throws Exception {
+		Billers biller = Billers.builder().id(1).name("Biller 1").description("Biller Description")
+				.dateTime("20221228214133").build();
+		given(billersService.saveBiller(Mockito.any())).willReturn(biller);
+
+		mockMvc.perform(post("/add")//
+				.contentType(MediaType.APPLICATION_JSON)//
+				.content(toJson(biller)))//
+				.andExpect(status().isCreated())//
+				.andExpect(jsonPath("$.name", is("Biller 1")))//
+				.andExpect(jsonPath("$.description", is("Biller Description")));
+		verify(billersService, VerificationModeFactory.times(1)).saveBiller(Mockito.any());
+		reset(billersService);
 	}
 
 	@Test
 	public void whenFindBillers_thenReturnBillers() throws Exception {
 
 		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
-//		mockMvc.perform(get("/list").header("authorization", "Bearer " + "this_is_JWT_token")
-//				.contentType(MediaType.APPLICATION_JSON)).andExpect(MockMvcResultMatchers.status().isOk());
-//		verify(billersService).allBillers();
-//		reset(userService);
-
-		//
 
 		Billers biller1 = Billers.builder().name("apple").description("desc 1").dateTime("20221228214122")
 				.transactionsList(Arrays.asList(Transactions.builder().build())).build();
@@ -117,55 +138,95 @@ public class HomeControllerTest {
 		Billers biller3 = Billers.builder().name("cherry").description("desc 3").dateTime("20221228214122")
 				.transactionsList(Arrays.asList(Transactions.builder().build())).build();
 
-		BillerListRespDTO responseDto = BillerListRespDTO.builder().status_message("Transaction is successful!")
-				.billerListDTO(Arrays.asList(BillerListDTO.builder().date_time("")
-						.billers(mapList(Arrays.asList(biller1, biller2, biller3), BillerDTO.class)).build()))
-				.build();
+		List<BillerListDTO> billerListDTOList = Arrays.asList(BillerListDTO.builder().date_time("20221228214122")
+				.billers(mapList(Arrays.asList(biller1, biller2, biller3), BillerDTO.class)).build());
+
+		BillerListRespDTO responseDto = BillerListRespDTO.builder()//
+				.status_message("Transaction is successful!")//
+				.billerListDTO(billerListDTOList).build();
 
 		given(billersService.allBillers()).willReturn(responseDto);
 
-//		mockMvc.perform(get("/list").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isOk())
-//				.andExpect(jsonPath("$", hasSize(1)))
-//				.andExpect(jsonPath("$[0].name", is(biller1.getName())))
-//				.andExpect(jsonPath("$[1].name", is(biller2.getName())))
-//				.andExpect(jsonPath("$[2].name", is(biller3.getName())));
-//		verify(billersService, VerificationModeFactory.times(1)).allBillers();
-
-		mockMvc.perform(get("/list").contentType(MediaType.APPLICATION_JSON).header("authorization",
-				"Bearer " + "THIS_IS_TEMP_JWT_TOKEN")).andExpect(status().isOk()).andExpect(status().isOk())
+		mockMvc.perform(get("/list")//
+				.contentType(MediaType.APPLICATION_JSON)//
+				.header("authorization", "Bearer " + "THIS_IS_TEMP_JWT_TOKEN"))//
+				.andExpect(status().isOk())//
 				.andExpect(jsonPath("$.status_message", is("Transaction is successful!")));
+
 		verify(billersService, VerificationModeFactory.times(1)).allBillers();
-
 		reset(billersService);
 
-	}
-
-	@Test
-	public void whenAddBiller_thenReturnBillerRespDTO() throws Exception {
-		Billers biller = Billers.builder().name("Biller 1").description("Biller Description").dateTime("20221228214133")
-				.build();
-		given(billersService.saveBiller(Mockito.any())).willReturn(biller);
-
-		mockMvc.perform(post("/add").contentType(MediaType.APPLICATION_JSON).content(toJson(biller)))
-				.andExpect(status().isCreated()).andExpect(jsonPath("$.name", is("Biller 1")));
-		verify(billersService, VerificationModeFactory.times(1)).saveBiller(Mockito.any());
-		reset(billersService);
 	}
 
 	@Test
 	public void whenAddPay_thenReturnPayRespDTO() throws Exception {
 
+		when(userService.signin("admin", "admin")).thenReturn("this_is_JWT_token");
+
+		Billers biller = Billers.builder().id(1).description("description").dateTime("dateTime").build();
+
+		Transactions transactions = Transactions.builder().transition_id(1).apiCaller("test_caller").referenceNo("111")
+				.phoneNumber("111").amount(1L).billers(biller).build();
+
+		given(transactionsService.savePay(Mockito.any())).willReturn(transactions);
+
+		PayRespDTO response = PayRespDTO.builder().status_message("Transaction is successful!")//
+				.transaction_id(String.valueOf(transactions.getTransition_id()))//
+				.amount(String.valueOf(transactions.getAmount()))//
+				.transaction_date(transactions.getReferenceNo())//
+				.phone_number(transactions.getPhoneNumber()).build();
+		mockMvc.perform(post("/pay")//
+				.header("authorization", "Bearer " + "THIS_IS_TEMP_JWT_TOKEN")//
+				.contentType(MediaType.APPLICATION_JSON)//
+				.content(toJson(transactions)))//
+				.andExpect(status().isCreated())//
+				.andExpect(jsonPath("$.amount", is(response.getAmount())))//
+				.andExpect(jsonPath("$.transaction_date", is(response.getTransaction_date())))//
+				.andExpect(jsonPath("$.status_message", is("Transaction is successful!")));
+		verify(transactionsService, VerificationModeFactory.times(1)).savePay(Mockito.any());
+		reset(transactionsService);
+
 	}
 
-//	@Test
-//	public void testFindTransactionById() throws Exception {
+	@Test
+	public void whenFindTransactionById_thenReturnTransactionsRespDTO() throws Exception {
+
+//		TransactionsRespDTO response = TransactionsRespDTO.builder().api_caller("api_caller").id("1").amount("amount")
+//				.reference_no("reference_no").phone_number("phone_number").build();
 //
-//	}
-//
-//	@Test
-//	public void testFindTransactionList() throws Exception {
-//
-//	}
+//		given(transactionsService.findTransactionsResponseDTOById(Mockito.any())).willReturn(response);
+//		mockMvc.perform(get("/transaction")//
+//				.contentType(MediaType.APPLICATION_JSON))//
+//				.andExpect(status().isOk())//
+//				.andExpect(jsonPath("$.api_caller", is("")))//
+//				.andExpect(jsonPath("$.reference_no", is("")))//
+//				.andExpect(jsonPath("$.phone_number", is("")));
+//		reset(transactionsService);
+
+	}
+
+	@Test
+	public void whenFindTransactionList_thenReturnTransactions() throws Exception {
+
+		Transactions tr1 = Transactions.builder().transition_id(1).apiCaller("apiCaller 1").referenceNo("referenceNo 1")
+				.phoneNumber("phoneNumber 1").amount(100L).build();
+		Transactions tr2 = Transactions.builder().transition_id(2).apiCaller("apiCaller 2").referenceNo("referenceNo 2")
+				.phoneNumber("phoneNumber 2").amount(200L).build();
+
+		List<Transactions> response = Arrays.asList(tr1, tr2);
+
+		given(transactionsService.findAllTransactions()).willReturn(response);
+
+		mockMvc.perform(get("/transaction/list")//
+				.contentType(MediaType.APPLICATION_JSON)//
+				.header("authorization", "Bearer " + "THIS_IS_TEMP_JWT_TOKEN"))//
+				.andExpect(status().isOk())//
+				.andExpect(jsonPath("$.length()", is(2)));
+
+		verify(transactionsService, VerificationModeFactory.times(1)).findAllTransactions();
+		reset(transactionsService);
+
+	}
 
 	/*
 	 * @Test public void greetin_withoutValidJwtToken() throws Exception {
@@ -173,13 +234,12 @@ public class HomeControllerTest {
 	 * mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
 	 * .andExpect(content().string(containsString(""))); }
 	 * 
-	 * @Test
-	 * 
-	 * @DisplayName("greeting - GET /greeting") public void testGreeting() throws
-	 * Exception { when(userService.greet()).thenReturn("Hello, Mock");
+	 * @Test @DisplayName("greeting - GET /greeting") public void testGreeting()
+	 * throws Exception { when(userService.greet()).thenReturn("Hello, Mock");
 	 * mockMvc.perform(get("/greeting")).andDo(print()).andExpect(status().isOk())
 	 * .andExpect(content().string(containsString("Hello, Mock"))); }
 	 */
+
 	<S, T> List<T> mapList(List<S> source, Class<T> targetClass) {
 		return source.stream().map(element -> modelMapper.map(element, targetClass)).collect(Collectors.toList());
 	}
